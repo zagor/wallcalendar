@@ -42,7 +42,7 @@ class Calendar:
         cal_args = []
         for c in self.config['calendars'].keys():
             cal_args.append('--calendar')
-            cal_args.append(f'"{c}"')
+            cal_args.append(c)
 
         today = datetime.date.today()
         first_day = today - datetime.timedelta(days=today.weekday())
@@ -105,7 +105,7 @@ class Calendar:
                 if int(string) == today.day:
                     c = color.dyellow
                 else:
-                    c = color.lgray
+                    c = '#ddd'
                 #self.draw.text((self.day_width * d + self.day_width - 20, y), string, font=f, fill=color.black)
                 self.draw.text((self.day_width * d + 40, y + 40), string, font=f, fill=c)
                 t += datetime.timedelta(days=1)
