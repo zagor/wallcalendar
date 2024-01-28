@@ -17,4 +17,4 @@ cal.Calendar(draw, xsize, ysize).render()
 indoor.Indoor(draw).render()
 outdoor.Outdoor(draw).render()
 
-image.show()
+image.save("wallcalendar.png")
