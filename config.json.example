@@ -1,0 +1,21 @@
+{
+  "HomeAssistant": {
+    "base_url": "http://homeassistant:8123",
+    "access_token": "access-token-goes-here"
+  },
+  "Outdoor":{
+    "entity": "sensor.outside_temperature"
+  },
+  "Indoor": {
+    "entities": {
+      "sensor.bedroom_temperature": "bedroom",
+      "sensor.kitchen_temperature": "kitchen"
+    }
+  },
+  "Calendar": {
+    "calendars": {
+      "Work calendar": "#db7a00",
+      "Family calendar": "#82407d",
+    }
+  }
+}
