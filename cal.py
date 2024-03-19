@@ -1,9 +1,9 @@
 import datetime
-import subprocess
 
 from PIL import ImageFont, ImageDraw
 import color
 import config
+import homeassistant
 import namn
 
 
@@ -11,8 +11,8 @@ class Calendar:
     class CalendarEntry:
         def __init__(self, line: str):
             sdate, stime, edate, etime, self.event, self.calendar = line.strip().split('\t')
-            self.start_time = datetime.datetime.fromisoformat(f'{sdate}T{stime}:00')
-            self.end_time = datetime.datetime.fromisoformat(f'{edate}T{etime}:00')
+            self.start_time = datetime.datetime.fromisoformat(f'{sdate}T{stime}')
+            self.end_time = datetime.datetime.fromisoformat(f'{edate}T{etime}')
             self.days: int = (self.end_time - self.start_time).days
             self.allday: bool = (self.end_time - self.start_time).total_seconds() > 86300
             self.config = config.Config().get("Calendar")
@@ -39,19 +39,29 @@ class Calendar:
         self.fetch_calendars()
 
     def fetch_calendars(self):
-        cal_args = []
-        for c in self.config['calendars'].keys():
-            cal_args.append('--calendar')
-            cal_args.append(c)
-
         today = datetime.date.today()
         first_day = today - datetime.timedelta(days=today.weekday())
         last_day = first_day + datetime.timedelta(days=28)
-        command = ['gcalcli', '--nocache', *cal_args, 'agenda',
-                   '--tsv', '--nocolor', '--details', 'calendar',
-                   first_day.isoformat(), last_day.isoformat()]
-        with open("cal.tsv", "w") as file:
-            subprocess.run(command, stdout=file)
+
+        with open('cal.tsv', 'w') as file:
+            for c in self.config['calendars'].keys():
+                json = homeassistant.get_calendar(c, first_day, last_day)
+                if not json:
+                    continue
+                for e in json:
+                    if 'date' in e['start']:
+                        # whole day
+                        sdate = e['start']['date']
+                        edate = e['end']['date']
+                        stime = etime = '00:00:00'
+                    else:
+                        d=datetime.datetime.fromisoformat(e['start']['dateTime'])
+                        sdate = d.date().isoformat()
+                        stime = d.time().isoformat()
+                        d=datetime.datetime.fromisoformat(e['end']['dateTime'])
+                        edate = d.date().isoformat()
+                        etime = d.time().isoformat()
+                    file.write(f'{sdate}\t{stime}\t{edate}\t{etime}\t{e["summary"]}\t{c}\n')
 
     def draw_background(self):
         ##############
